@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/Ankater/last-1000/internal/db"
@@ -11,9 +13,34 @@ import (
 )
 
 func main() {
+	if len(os.Args) < 2 {
+		log.Fatal("expected subcommand: create-token")
+	}
+
+	switch os.Args[1] {
+	case "create-token":
+		if err := runCreateToken(os.Args[2:]); err != nil {
+			log.Fatal(err)
+		}
+	default:
+		log.Fatalf("unknown subcommand: %s", os.Args[1])
+	}
+}
+
+func runCreateToken(args []string) error {
+	createTokenCmd := flag.NewFlagSet("create-token", flag.ContinueOnError)
+	name := createTokenCmd.String("name", "", "token name")
+	if err := createTokenCmd.Parse(args); err != nil {
+		return err
+	}
+
+	if *name == "" {
+		return fmt.Errorf("name is required")
+	}
+
 	conn, err := db.Open()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer conn.Close()
 
@@ -21,16 +48,17 @@ func main() {
 
 	token, err := tokens.GenerateToken(32)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := repo.CreateToken(ctx, token); err != nil {
-		log.Fatal(err)
+	if err := repo.CreateToken(ctx, token, *name); err != nil {
+		return err
 	}
 
 	fmt.Println("Token:")
 	fmt.Println(token)
+	return nil
 }

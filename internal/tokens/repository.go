@@ -16,13 +16,14 @@ func hashToken(token string) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func (r *Repository) CreateToken(ctx context.Context, token string) error {
+func (r *Repository) CreateToken(ctx context.Context, token string, name string) error {
 	tokenHash := hashToken(token)
 
 	_, err := r.DB.ExecContext(
 		ctx,
-		`INSERT INTO tokens (token_hash) VALUES ($1)`,
+		`INSERT INTO tokens (token_hash, name) VALUES ($1, $2)`,
 		tokenHash,
+		name,
 	)
 	return err
 }

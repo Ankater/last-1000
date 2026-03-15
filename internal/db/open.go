@@ -21,6 +21,7 @@ func Open() (*sql.DB, error) {
 			envOrDefault("POSTGRES_SSLMODE", "disable"),
 		)
 	}
+	fmt.Println("Connecting to database with DSN:", dsn)
 
 	db, err := sql.Open("postgres", dsn)
 	if err != nil {
