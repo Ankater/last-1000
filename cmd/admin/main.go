@@ -10,9 +10,15 @@ import (
 
 	"github.com/Ankater/last-1000/internal/db"
 	"github.com/Ankater/last-1000/internal/tokens"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	if len(os.Args) < 2 {
 		log.Fatal("expected subcommand: create-token")
 	}
