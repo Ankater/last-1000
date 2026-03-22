@@ -27,3 +27,16 @@ func (r *Repository) CreateToken(ctx context.Context, token string, name string)
 	)
 	return err
 }
+
+func (r *Repository) TokenExists(ctx context.Context, token string) (bool, error) {
+	tokenHash := hashToken(token)
+
+	var count int
+
+	err := r.DB.QueryRowContext(ctx, "SELECT COUNT(1) FROM tokens WHERE token_hash = $1", tokenHash).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
