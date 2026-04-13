@@ -51,16 +51,13 @@ func runCreateToken(args []string) error {
 	defer conn.Close()
 
 	repo := tokens.Repository{DB: conn}
-
-	token, err := tokens.GenerateToken(32)
-	if err != nil {
-		return err
-	}
+	service := tokens.Service{Repo: &repo}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := repo.CreateToken(ctx, token, *name); err != nil {
+	token, err := service.CreateToken(ctx, *name)
+	if err != nil {
 		return err
 	}
 

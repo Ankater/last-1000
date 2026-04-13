@@ -5,10 +5,8 @@ import (
 	"encoding/hex"
 )
 
-func GenerateToken(n int) (string, error) {
+func GenerateToken(n int) string {
 	b := make([]byte, n)
-	if _, err := rand.Read(b); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(b), nil
+	rand.Read(b)
+	return hex.EncodeToString(b)
 }

@@ -4,8 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-
-	_ "github.com/lib/pq"
 )
 
 func Open() (*sql.DB, error) {
