@@ -18,7 +18,10 @@ func (s *Service) CreateToken(ctx context.Context, name string) (string, error) 
 		return "", fmt.Errorf("name is required")
 	}
 
-	token := GenerateToken(32)
+	token, err := GenerateToken(32)
+	if err != nil {
+		return "", fmt.Errorf("generate token: %w", err)
+	}
 
 	if err := s.Repo.CreateToken(ctx, token, name); err != nil {
 		return "", fmt.Errorf("create token %q: %w", name, err)

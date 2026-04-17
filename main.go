@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -13,5 +14,8 @@ func main() {
 		w.Write([]byte("hello"))
 	})
 
-	http.ListenAndServe(":8080", r)
+	log.Printf("starting server on :8080")
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatal(err)
+	}
 }
