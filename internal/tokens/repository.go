@@ -27,3 +27,16 @@ func (r *Repository) CreateToken(ctx context.Context, token string, name string)
 	)
 	return err
 }
+
+func (r *Repository) TokenExists(ctx context.Context, token string) (bool, error) {
+	tokenHash := hashToken(token)
+
+	var exists bool
+
+	err := r.DB.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM tokens WHERE token_hash = $1)", tokenHash).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
