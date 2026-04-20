@@ -92,7 +92,7 @@ func (s *server) addMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	if err := s.messages.AddMessage(ctx, body.Message); err != nil {
+	if err := s.messages.AddMessageAndPrune(ctx, body.Message); err != nil {
 		http.Error(w, "internal server error", http.StatusInternalServerError)
 		return
 	}

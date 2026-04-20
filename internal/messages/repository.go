@@ -7,6 +7,15 @@ import (
 )
 
 const pageSize = 100
+const maxMessages = 1000
+
+const addMessageAndPruneQuery = `WITH inserted AS (
+	INSERT INTO messages (message) VALUES ($1)
+)
+DELETE FROM messages
+WHERE id IN (
+	SELECT id FROM messages ORDER BY created_at DESC, id DESC OFFSET $2
+)`
 
 type Message struct {
 	ID        int64     `json:"id"`
@@ -18,11 +27,12 @@ type Repository struct {
 	DB *sql.DB
 }
 
-func (r *Repository) AddMessage(ctx context.Context, message string) error {
+func (r *Repository) AddMessageAndPrune(ctx context.Context, message string) error {
 	_, err := r.DB.ExecContext(
 		ctx,
-		`INSERT INTO messages (message) VALUES ($1)`,
+		addMessageAndPruneQuery,
 		message,
+		maxMessages-1,
 	)
 	return err
 }

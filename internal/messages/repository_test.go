@@ -11,7 +11,7 @@ import (
 	"github.com/Ankater/last-1000/internal/testsql"
 )
 
-func TestAddMessage(t *testing.T) {
+func TestAddMessageAndPrune(t *testing.T) {
 	var gotQuery string
 	var gotArgs []any
 
@@ -30,19 +30,19 @@ func TestAddMessage(t *testing.T) {
 	})
 
 	repo := Repository{DB: db}
-	if err := repo.AddMessage(context.Background(), "hello"); err != nil {
-		t.Fatalf("AddMessage returned error: %v", err)
+	if err := repo.AddMessageAndPrune(context.Background(), "hello"); err != nil {
+		t.Fatalf("AddMessageAndPrune returned error: %v", err)
 	}
 
-	if gotQuery != `INSERT INTO messages (message) VALUES ($1)` {
+	if gotQuery != addMessageAndPruneQuery {
 		t.Fatalf("unexpected query: %q", gotQuery)
 	}
-	if len(gotArgs) != 1 || gotArgs[0] != "hello" {
+	if len(gotArgs) != 2 || gotArgs[0] != "hello" || !isIntArg(gotArgs[1], maxMessages-1) {
 		t.Fatalf("unexpected args: %#v", gotArgs)
 	}
 }
 
-func TestAddMessagePropagatesExecError(t *testing.T) {
+func TestAddMessageAndPrunePropagatesExecError(t *testing.T) {
 	db, err := testsql.Open(testsql.Config{
 		Exec: func(ctx context.Context, query string, args []any) (driver.Result, error) {
 			return nil, errors.New("insert failed")
@@ -56,7 +56,7 @@ func TestAddMessagePropagatesExecError(t *testing.T) {
 	})
 
 	repo := Repository{DB: db}
-	err = repo.AddMessage(context.Background(), "hello")
+	err = repo.AddMessageAndPrune(context.Background(), "hello")
 	if err == nil || err.Error() != "insert failed" {
 		t.Fatalf("expected insert error, got %v", err)
 	}
