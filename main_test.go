@@ -188,10 +188,12 @@ func TestAddMessage(t *testing.T) {
 	})
 
 	t.Run("creates message", func(t *testing.T) {
+		var gotQuery string
 		var gotArgs []any
 		s := &server{
 			messages: newMessageRepository(t, testsql.Config{
 				Exec: func(ctx context.Context, query string, args []any) (driver.Result, error) {
+					gotQuery = query
 					gotArgs = args
 					return driver.RowsAffected(1), nil
 				},
@@ -206,8 +208,11 @@ func TestAddMessage(t *testing.T) {
 		if rec.Code != http.StatusCreated {
 			t.Fatalf("expected status %d, got %d", http.StatusCreated, rec.Code)
 		}
-		if len(gotArgs) != 1 || gotArgs[0] != "hello" {
-			t.Fatalf("expected message arg %q, got %#v", "hello", gotArgs)
+		if !strings.Contains(gotQuery, "DELETE FROM messages") {
+			t.Fatalf("expected capped insert query, got %q", gotQuery)
+		}
+		if len(gotArgs) != 2 || gotArgs[0] != "hello" || !isIntArg(gotArgs[1], 999) {
+			t.Fatalf("expected message/max args [hello 999], got %#v", gotArgs)
 		}
 	})
 
